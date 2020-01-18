@@ -1,4 +1,3 @@
-import os
 import urllib.request
 from app import app
 from flask import Flask, request, redirect, jsonify
@@ -23,10 +22,12 @@ def upload_file():
                 resp.status_code = 400
                 return resp
         file = request.files['file']
+
         if file.filename == '':
                 resp = jsonify({'message' : 'No file selected for uploading'})
                 resp.status_code = 400
                 return resp
+
         if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
@@ -38,12 +39,11 @@ def upload_file():
                 monument=record[0][2]
                 lat=record[0][4]
                 log=record[0][5]
+
                 print(monument,lat,log)
 
-                #https://www.google.com/maps/dir/?api=1&origin=12.311570,76.613735&destination=12.316117,76.614168
-
-                o_ltlng=db.latlong(1)
-                d_ltlng=db.latlong(2)
+                o_ltlng=db.latlong(clf) #origin place id
+                d_ltlng=db.latlong(2) #destination place id
 
                 resp = jsonify({'message' : 'File successfully uploaded','clas': monument, 'link':lk.url(o_ltlng[0],o_ltlng[1],d_ltlng[0],d_ltlng[1]) })
                 resp.status_code = 201
@@ -52,6 +52,13 @@ def upload_file():
                 resp = jsonify({'message' : 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
                 resp.status_code = 400
                 return resp
+
+@app.route('/auth/', methods=['POST'])
+def addOne():
+    data = request.get_json()
+    print(data)
+    return jsonify({'auth' : 'yes'})
+
 
 
 def image_identifier():
