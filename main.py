@@ -7,13 +7,15 @@ from keras.preprocessing import image
 import numpy as np
 from keras.models import load_model
 import os
+import db_connect as db
+import link as lk
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['POST'])
+@app.route('/file/', methods=['POST'])
 def upload_file():
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -28,13 +30,22 @@ def upload_file():
         if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+                
                 os.rename(filename,"im.jpeg")
                 clf=image_identifier()
-                classes=['golden Jublee Bhavana','plane','swamyji']
-                cls=classes[clf]
                 os.remove("im.jpeg")
-                print(cls)
-                resp = jsonify({'message' : 'File successfully uploaded','class': cls })
+                record = db.read(clf)
+                monument=record[0][2]
+                lat=record[0][4]
+                log=record[0][5]
+                print(monument,lat,log)
+
+                #https://www.google.com/maps/dir/?api=1&origin=12.311570,76.613735&destination=12.316117,76.614168
+
+                o_ltlng=db.latlong(1)
+                d_ltlng=db.latlong(2)
+
+                resp = jsonify({'message' : 'File successfully uploaded','clas': monument, 'link':lk.url(o_ltlng[0],o_ltlng[1],d_ltlng[0],d_ltlng[1]) })
                 resp.status_code = 201
                 return resp
         else:
