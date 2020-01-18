@@ -56,8 +56,7 @@ def upload_file():
 @app.route('/auth/', methods=['POST'])
 def addOne():
     data = request.get_json()
-    print(data)
-    return jsonify({'auth' : 'yes'})
+    return jsonify({'auth' : db.auth(data['email'],data['pass'])})
 
 
 
