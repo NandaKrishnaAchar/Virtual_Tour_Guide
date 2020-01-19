@@ -60,9 +60,17 @@ def upload_file():
                 d_ltlng=db.latlong( visinity[0][0]) #destination place id
 
     
+
+                for v in visinity:
+                    lnk=lk.url(o_ltlng[0],o_ltlng[1],v[2],v[3])
+                    v.append(lnk)
+                print(visinity)
+
+
+
+
                 resp = jsonify({'message' : 'File successfully uploaded',
                     'clas': monument,'place_id':clf,'place_name':place_name, 
-                    'link':lk.url(o_ltlng[0],o_ltlng[1],d_ltlng[0],d_ltlng[1]),
                     "vicinity":visinity})
                 resp.status_code = 201
                 return resp
