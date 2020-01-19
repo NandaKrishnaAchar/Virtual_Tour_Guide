@@ -166,7 +166,6 @@ def plname_to(place_name):
          connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@")
          cursor = connection.cursor()
          sql_fetch_query = """SELECT place_id from tour1 where place_name=%s"""
-         print(sql_fetch_query)
          cursor.execute(sql_fetch_query,(place_name,))
          record = cursor.fetchall()
 
@@ -189,7 +188,6 @@ def plid_to(place_id):
          connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@")
          cursor = connection.cursor()
          sql_fetch_query = """SELECT place_name from tour1 where place_id=%s"""
-         print(sql_fetch_query)
          cursor.execute(sql_fetch_query,(place_id,))
          record = cursor.fetchall()
 
@@ -205,6 +203,28 @@ def plid_to(place_id):
             connection.close()
             print("MySQL connection is closed")
 
+def pid_to_address(place_id):
+     try:
+         connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@")
+         cursor = connection.cursor()
+         sql_fetch_query = """SELECT address from tour1 where place_id=%s"""
+         cursor.execute(sql_fetch_query,(place_id,))
+         record = cursor.fetchall()
+
+
+         return record
+
+     except mysql.connector.Error as error:
+         print("Failed to read data from MySQL table {}".format(error))
+         return -1
+     finally:
+        if (connection.is_connected()):
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")
+
+
+
 def auth(email,pas):
     try:
          connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@") 
@@ -217,10 +237,10 @@ def auth(email,pas):
          try:
              
              if(o_pass[0][0]==str(pas)):
-                return 'yes'
-             return 'no'
+                return email
+             return 0
          except:
-             return 'no' 
+             return 0 
     
     except mysql.connector.Error as error:
          print("Failed to read data from MySQL table {}".format(error))
@@ -232,3 +252,26 @@ def auth(email,pas):
             connection.close()
             print("MySQL connection is closed")
 
+
+def signup(name,email,pas):
+    try:
+        connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@") 
+        cursor = connection.cursor()
+        sql_fetch_query = """insert into usr(name,email,password) values(%s,%s,%s);
+"""
+        print(sql_fetch_query)
+        print(cursor.execute(sql_fetch_query,(name,email,pas,)))
+        connection.commit()
+        return email
+
+    except mysql.connector.Error as error:
+        print("Failed to read data from MySQL table {}".format(error))
+        return -1
+
+    finally:
+        if (connection.is_connected()):
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")
+
+print(auth('email2','123'))

@@ -8,11 +8,23 @@ from keras.models import load_model
 import os
 import db_connect as db
 import link as lk
+import distance
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+mydict={}
 
 def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/comment/',methods=['POST'])
+def comment():
+    data = request.get_json()
+    print(data['user_id'])
+    print(data['comment'])
+    print(data['place_id'])
+    return jsonify({'comment':'Comment uploaded successfully'})
+
+
 
 @app.route('/file/', methods=['POST'])
 def upload_file():
@@ -31,21 +43,27 @@ def upload_file():
         if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-                
+                print(filename)                
                 os.rename(filename,"im.jpeg")
                 clf=image_identifier()
                 os.remove("im.jpeg")
                 record = db.read(clf)
+                place_name=record[0][1]
                 monument=record[0][2]
                 lat=record[0][4]
                 log=record[0][5]
 
                 print(monument,lat,log)
+                visinity=distance.sort_dist(place_name)
 
                 o_ltlng=db.latlong(clf) #origin place id
-                d_ltlng=db.latlong(2) #destination place id
+                d_ltlng=db.latlong( visinity[0][0]) #destination place id
 
-                resp = jsonify({'message' : 'File successfully uploaded','clas': monument, 'link':lk.url(o_ltlng[0],o_ltlng[1],d_ltlng[0],d_ltlng[1]) })
+    
+                resp = jsonify({'message' : 'File successfully uploaded',
+                    'clas': monument,'place_id':clf,'place_name':place_name, 
+                    'link':lk.url(o_ltlng[0],o_ltlng[1],d_ltlng[0],d_ltlng[1]),
+                    "vicinity":visinity})
                 resp.status_code = 201
                 return resp
         else:
@@ -56,8 +74,13 @@ def upload_file():
 @app.route('/auth/', methods=['POST'])
 def addOne():
     data = request.get_json()
+    print(data['email'],data['pass'])
     return jsonify({'auth' : db.auth(data['email'],data['pass'])})
 
+@app.route('/signup/',methods=['POST'])
+def signup():
+    data = request.get_json()
+    return jsonify({'auth':db.signup(data['name'],data['email'],data['pass'])})
 
 
 def image_identifier():
@@ -70,4 +93,4 @@ def image_identifier():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=80)
+    app.run(host='0.0.0.0',port=80,debug=True)
