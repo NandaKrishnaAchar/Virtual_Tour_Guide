@@ -73,10 +73,10 @@ def add_to_db(userid,placeid):
     try:
          connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@") 
          cursor = connection.cursor()
-         sql_fetch_query = """insert into place_visited (userid,place_id) values(%s,%s)"""
+         sql_fetch_query = """insert into place_visited (userid,place_id,time,date) values(%s,%s,curtime(),curdate())"""
          record1=(userid,placeid)
          print(sql_fetch_query)
-         cursor.execute(sql_fetch_query,record1)
+         cursor.execute(sql_fetch_query,(userid,placeid,))
          print("stored in db_connect")
          connection.commit()
          
@@ -91,6 +91,55 @@ def add_to_db(userid,placeid):
             connection.close()
             print("MySQL connection is closed")
 
+def name_to_id(username):
+    try:
+         connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@") 
+         cursor = connection.cursor()
+         sql_fetch_query = """select usr_id from usr where username=name"""
+        
+         print(sql_fetch_query)
+         cursor.execute(sql_fetch_query)
+         records=cursor.fetchall()
+         print("stored in db_connect")
+         connection.commit()
+         return records             
+    
+    except mysql.connector.Error as error:
+         print("Failed to read data from MySQL table {}".format(error))
+         return -1
+
+    finally:
+        if (connection.is_connected()):
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")
+
+
+
+def for_admin():
+    try:
+         connection = mysql.connector.connect(host= "ec2-13-233-208-238.ap-south-1.compute.amazonaws.com",port=3306,database="tour_guide",user= "ec2-user@13.233.208.238",password= "Hello123@") 
+         cursor = connection.cursor()
+         sql_fetch_query = """select pl.userid,u.name,p.place_name,pl.time,pl.date from usr as u,place_visited as pl,tour1 as p where u.usr_id=pl.userid and p.place_id=pl.place_id"""
+        
+         print(sql_fetch_query)
+         cursor.execute(sql_fetch_query)
+         records=cursor.fetchall()
+         print("stored in db_connect")
+         connection.commit()
+         return records             
+    
+    except mysql.connector.Error as error:
+         print("Failed to read data from MySQL table {}".format(error))
+         return -1
+
+    finally:
+        if (connection.is_connected()):
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")
+
+   
 
 def latlng_rad(pid):
     try:
